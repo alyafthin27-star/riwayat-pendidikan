@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Pendidikan - Alya Fathinah Zahrah</title>
+    <!-- Memanggil library sql.js -->
+    <script src="sql-wasm.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px auto;
+            max-width: 900px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .header {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            border-left: 6px solid #0056b3;
+        }
+        h2 {
+            margin: 0 0 8px 0;
+            color: #0056b3;
+        }
+        p {
+            margin: 0;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        th, td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #dee2e6;
+            text-align: left;
+        }
+        th {
+            background-color: #0056b3;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+        .badge {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>Daftar Riwayat Pendidikan</h2>
+        <p><strong>Nama:</strong> Alya Fathinah Zahrah | <strong>Mata Kuliah:</strong> Manajemen Basis Data</p>
+    </div>
+
+    <div id="output">Memuat database riwayat pendidikan...</div>
+
+    <script>
+        const config = {
+            locateFile: filename => `${filename}`
+        };
+
+        initSqlJs(config).then(function(SQL){
+            // Membaca file SQLite
+            fetch("pendidikan.db")
+                .then(res => res.arrayBuffer())
+                .then(buf => {
+                    const db = new SQL.Database(new Uint8Array(buf));
+                    
+                    // Ambil data dari tabel riwayat
+                    const contents = db.exec("SELECT nama_sekolah, tahun_masuk, tahun_lulus, keterangan FROM riwayat");
+
+                    if (contents.length > 0) {
+                        const values = contents[0].values;
+
+                        let html = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nama Sekolah</th>
+                                    <th>Tahun Masuk</th>
+                                    <th>Tahun Lulus</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                        `;
+
+                        values.forEach(row => {
+                            html += `
+                                <tr>
+                                    <td><strong>${row[0]}</strong></td>
+                                    <td>${row[1]}</td>
+                                    <td>${row[2]}</td>
+                                    <td><span class="badge">${row[3]}</span></td>
+                                </tr>
+                            `;
+                        });
+
+                        html += '</tbody></table>';
+                        document.getElementById("output").innerHTML = html;
+                    } else {
+                        document.getElementById("output").innerHTML = "Data riwayat pendidikan kosong.";
+                    }
+                })
+                .catch(err => {
+                    document.getElementById("output").innerHTML = "Gagal memuat database: " + err;
+                });
+        });
+    </script>
+</body>
+</html>
